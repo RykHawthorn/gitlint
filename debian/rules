@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+export LC_ALL=C.UTF-8
+export PYBUILD_TEST_ARGS=python{version} -m coverage run --omit='/usr/*,$(CURDIR)/gitlint/tests/*,$(CURDIR)/gitlint/qa/*' -m unittest discover -v -s $(CURDIR)/gitlint/tests
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_test:
+	PYBUILD_SYSTEM=custom dh_auto_test
+
+override_dh_install:
+	dh_install
+	find debian/gitlint/usr/lib -name commit-msg -exec chmod +x {} \;

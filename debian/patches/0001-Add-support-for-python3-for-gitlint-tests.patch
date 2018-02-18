@@ -1,0 +1,226 @@
+From 0d17f2aec7e3c82e450d9b3f53ad86804793d692 Mon Sep 17 00:00:00 2001
+From: Patrik Hagedorn <patrik.hagedorn@gmx.net>
+Date: Thu, 11 Jan 2018 17:31:23 +0100
+Subject: [PATCH 1/4] Add support for python3 for gitlint/tests
+
+Add conditional imports for python3 modules to support testing with
+python3. Make dependency for ordereddict conditional for python
+versions < 2.7 as it is a python built-in since python version 2.7.
+
+Forwarded: https://github.com/jorisroovers/gitlint/pull/49
+---
+ gitlint/tests/base.py                   | 17 ++++++++++++-----
+ gitlint/tests/test_cli.py               |  9 ++++++++-
+ gitlint/tests/test_config.py            |  7 ++++++-
+ gitlint/tests/test_config_precedence.py |  8 +++++++-
+ gitlint/tests/test_display.py           |  8 +++++++-
+ gitlint/tests/test_git.py               |  9 ++++++++-
+ gitlint/tests/test_hooks.py             |  7 ++++++-
+ gitlint/tests/test_lint.py              |  7 ++++++-
+ requirements.txt                        |  4 ++--
+ setup.py                                |  6 +++---
+ 10 files changed, 65 insertions(+), 17 deletions(-)
+
+diff --git a/gitlint/tests/base.py b/gitlint/tests/base.py
+index defbd74..f58c9cd 100644
+--- a/gitlint/tests/base.py
++++ b/gitlint/tests/base.py
+@@ -1,6 +1,12 @@
+ import logging
+ import os
+-import unittest2
++
++try:
++    # python 2.x
++    import unittest2 as unittest
++except ImportError:
++    # python 3.x
++    import unittest
+ 
+ from gitlint.git import GitContext
+ from gitlint.utils import ustr, LOG_FORMAT
+@@ -10,12 +16,13 @@ from gitlint.utils import ustr, LOG_FORMAT
+ # For reference, this is where this patch is required:
+ # https://hg.python.org/unittest2/file/tip/unittest2/case.py#l227
+ try:
+-    unittest2.case.str = unicode
+-except NameError:
+-    pass  # python 3
++    # python 2.x
++    unittest.case.str = unicode
++except (AttributeError, NameError):
++    pass  # python 3.x
+ 
+ 
+-class BaseTestCase(unittest2.TestCase):
++class BaseTestCase(unittest.TestCase):
+     """ Base class of which all gitlint unit test classes are derived. Provides a number of convenience methods. """
+ 
+     # In case of assert failures, print the full error message
+diff --git a/gitlint/tests/test_cli.py b/gitlint/tests/test_cli.py
+index 65bbbf4..4abf38f 100644
+--- a/gitlint/tests/test_cli.py
++++ b/gitlint/tests/test_cli.py
+@@ -12,7 +12,14 @@ except ImportError:
+     from io import StringIO
+ 
+ from click.testing import CliRunner
+-from mock import patch
++
++try:
++    # python 2.x
++    from mock import patch
++except ImportError:
++    # python 3.x
++    from unittest.mock import patch  # pylint: disable=no-name-in-module, import-error
++
+ from sh import CommandNotFound
+ 
+ from gitlint.tests.base import BaseTestCase
+diff --git a/gitlint/tests/test_config.py b/gitlint/tests/test_config.py
+index d1ce24f..90595f1 100644
+--- a/gitlint/tests/test_config.py
++++ b/gitlint/tests/test_config.py
+@@ -1,6 +1,11 @@
+ # -*- coding: utf-8 -*-
+ 
+-from mock import patch
++try:
++    # python 2.x
++    from mock import patch
++except ImportError:
++    # python 3.x
++    from unittest.mock import patch  # pylint: disable=no-name-in-module, import-error
+ 
+ from gitlint import rules
+ from gitlint.config import LintConfig, LintConfigError, LintConfigGenerator, GITLINT_CONFIG_TEMPLATE_SRC_PATH
+diff --git a/gitlint/tests/test_config_precedence.py b/gitlint/tests/test_config_precedence.py
+index 0763890..49a24ad 100644
+--- a/gitlint/tests/test_config_precedence.py
++++ b/gitlint/tests/test_config_precedence.py
+@@ -8,7 +8,13 @@ except ImportError:
+     from io import StringIO
+ 
+ from click.testing import CliRunner
+-from mock import patch
++
++try:
++    # python 2.x
++    from mock import patch
++except ImportError:
++    # python 3.x
++    from unittest.mock import patch  # pylint: disable=no-name-in-module, import-error
+ 
+ from gitlint.tests.base import BaseTestCase
+ from gitlint import cli
+diff --git a/gitlint/tests/test_display.py b/gitlint/tests/test_display.py
+index 944ebf0..1c64b34 100644
+--- a/gitlint/tests/test_display.py
++++ b/gitlint/tests/test_display.py
+@@ -7,7 +7,13 @@ except ImportError:
+     # python 3.x
+     from io import StringIO
+ 
+-from mock import patch
++
++try:
++    # python 2.x
++    from mock import patch
++except ImportError:
++    # python 3.x
++    from unittest.mock import patch  # pylint: disable=no-name-in-module, import-error
+ 
+ from gitlint.display import Display
+ from gitlint.config import LintConfig
+diff --git a/gitlint/tests/test_git.py b/gitlint/tests/test_git.py
+index e1aef5d..1a17730 100644
+--- a/gitlint/tests/test_git.py
++++ b/gitlint/tests/test_git.py
+@@ -2,7 +2,14 @@
+ 
+ import datetime
+ import dateutil
+-from mock import patch, call, PropertyMock
++
++try:
++    # python 2.x
++    from mock import patch, call, PropertyMock
++except ImportError:
++    # python 3.x
++    from unittest.mock import patch, call, PropertyMock  # pylint: disable=no-name-in-module, import-error
++
+ from sh import ErrorReturnCode, CommandNotFound
+ 
+ from gitlint.tests.base import BaseTestCase
+diff --git a/gitlint/tests/test_hooks.py b/gitlint/tests/test_hooks.py
+index 0358f7c..7cfa644 100644
+--- a/gitlint/tests/test_hooks.py
++++ b/gitlint/tests/test_hooks.py
+@@ -2,7 +2,12 @@
+ 
+ import os
+ 
+-from mock import patch, ANY, mock_open
++try:
++    # python 2.x
++    from mock import patch, ANY, mock_open
++except ImportError:
++    # python 3.x
++    from unittest.mock import patch, ANY, mock_open  # pylint: disable=no-name-in-module, import-error
+ 
+ from gitlint.tests.base import BaseTestCase
+ from gitlint.config import LintConfig
+diff --git a/gitlint/tests/test_lint.py b/gitlint/tests/test_lint.py
+index d0e6789..e52ea84 100644
+--- a/gitlint/tests/test_lint.py
++++ b/gitlint/tests/test_lint.py
+@@ -7,7 +7,12 @@ except ImportError:
+     # python 3.x
+     from io import StringIO
+ 
+-from mock import patch
++try:
++    # python 2.x
++    from mock import patch
++except ImportError:
++    # python 3.x
++    from unittest.mock import patch  # pylint: disable=no-name-in-module, import-error
+ 
+ from gitlint.tests.base import BaseTestCase
+ from gitlint.lint import GitLinter
+diff --git a/requirements.txt b/requirements.txt
+index a538dfe..5b4c6ab 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -3,5 +3,5 @@ wheel==0.24.0
+ Click==6.6
+ sh==1.11; sys_platform != 'win32' # sh is not supported on windows
+ arrow==0.10.0
+-ordereddict==1.1
+-importlib==1.0.3; python_version < '2.7'
+\ No newline at end of file
++ordereddict==1.1; python_version < '2.7'
++importlib==1.0.3; python_version < '2.7'
+diff --git a/setup.py b/setup.py
+index 839c3b4..a24a2b0 100644
+--- a/setup.py
++++ b/setup.py
+@@ -64,12 +64,12 @@ setup(
+     ],
+     install_requires=[
+         'Click==6.6',
+-        'arrow==0.10.0',
+-        'ordereddict==1.1',
++        'arrow==0.10.0'
+     ],
+     extras_require={
+-        ':python_version == "2.6"': [
++        ':python_version < "2.7"': [
+             'importlib==1.0.3',
++            'ordereddict==1.1',
+         ],
+         ':sys_platform != "win32"': [
+             'sh==1.11',
+-- 
+2.11.0
+

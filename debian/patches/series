@@ -1,0 +1,4 @@
+0001-Add-support-for-python3-for-gitlint-tests.patch
+0002-Change-get_sample-and-get_expected-to-context.patch
+0003-Fix-regexp-matching-in-tests.patch
+0004-Remove-duplicate-line.patch

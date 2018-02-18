@@ -1,0 +1,28 @@
+From aca72be31bb13190aaf0f7b273cd6acd4e9965b2 Mon Sep 17 00:00:00 2001
+From: Patrik Hagedorn <patrik.hagedorn@gmx.net>
+Date: Mon, 8 Jan 2018 13:51:16 +0100
+Subject: [PATCH 4/4] Remove duplicate line
+
+The exact same line is already executed two lines before and a second
+execution will not change the result.
+
+Forwarded: https://github.com/jorisroovers/gitlint/pull/49
+---
+ gitlint/tests/test_config_builder.py | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/gitlint/tests/test_config_builder.py b/gitlint/tests/test_config_builder.py
+index dd94cf3..9256cac 100644
+--- a/gitlint/tests/test_config_builder.py
++++ b/gitlint/tests/test_config_builder.py
+@@ -103,7 +103,6 @@ class LintConfigBuilderTests(BaseTestCase):
+         config_builder = LintConfigBuilder()
+         config_builder.set_from_config_file(path)
+         expected_error_msg = u"No such rule 'föobar'"
+-        config_builder.set_from_config_file(path)
+         with self.assertRaisesRegex(LintConfigError, expected_error_msg):
+             config_builder.build()
+ 
+-- 
+2.11.0
+

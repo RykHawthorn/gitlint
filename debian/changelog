@@ -1,0 +1,5 @@
+gitlint (0.9.0-1) unstable; urgency=medium
+
+  * Initial packaging (Closes: #886864)
+
+ -- Patrik Hagedorn <patrik.hagedorn@gmx.net>  Mon, 15 Jan 2018 12:37:13 +0100

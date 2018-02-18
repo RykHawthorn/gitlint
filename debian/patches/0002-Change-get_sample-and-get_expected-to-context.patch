@@ -1,0 +1,40 @@
+From 97e28fff12a3d35e07aa4d78d4105a49e5cdf268 Mon Sep 17 00:00:00 2001
+From: Patrik Hagedorn <patrik.hagedorn@gmx.net>
+Date: Thu, 11 Jan 2018 17:39:01 +0100
+Subject: [PATCH 2/4] Change get_sample() and get_expected() to context
+
+Change get_sample() and get_expected() to use context manager to remove
+the warnings (ResourceWarning: unclosed file ...) under python3.
+
+Forwarded: https://github.com/jorisroovers/gitlint/pull/49
+---
+ gitlint/tests/base.py | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/gitlint/tests/base.py b/gitlint/tests/base.py
+index f58c9cd..b1cd608 100644
+--- a/gitlint/tests/base.py
++++ b/gitlint/tests/base.py
+@@ -53,7 +53,8 @@ class BaseTestCase(unittest.TestCase):
+     def get_sample(filename=""):
+         """ Read and return the contents of a file in gitlint/tests/samples """
+         sample_path = BaseTestCase.get_sample_path(filename)
+-        sample = ustr(open(sample_path).read())
++        with open(sample_path) as content:
++            sample = ustr(content.read())
+         return sample
+ 
+     @staticmethod
+@@ -62,7 +63,8 @@ class BaseTestCase(unittest.TestCase):
+         Optionally replace template variables specified by variable_dict. """
+         expected_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "expected")
+         expected_path = os.path.join(expected_dir, filename)
+-        expected = ustr(open(expected_path).read())
++        with open(expected_path) as content:
++            expected = ustr(content.read())
+ 
+         if variable_dict:
+             expected = expected.format(**variable_dict)
+-- 
+2.11.0
+

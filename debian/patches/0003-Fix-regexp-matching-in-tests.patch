@@ -1,0 +1,69 @@
+From 2de9ff6f99018d1e3467fb30235a92cd44e40f5e Mon Sep 17 00:00:00 2001
+From: Patrik Hagedorn <patrik.hagedorn@gmx.net>
+Date: Fri, 12 Jan 2018 11:43:37 +0100
+Subject: [PATCH 3/4] Fix regexp matching in tests
+
+Escape the path in expected exception messages as the assertRaisesRegex
+uses the string as a pattern for a re.search and it may contain some
+symbols (e.g. '+' or '*') that lets the regexp not match properly on
+other build systems.
+
+Forwarded: https://github.com/jorisroovers/gitlint/pull/49
+---
+ gitlint/tests/test_config_builder.py | 4 +++-
+ gitlint/tests/test_options.py        | 6 ++++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/gitlint/tests/test_config_builder.py b/gitlint/tests/test_config_builder.py
+index 8239943..dd94cf3 100644
+--- a/gitlint/tests/test_config_builder.py
++++ b/gitlint/tests/test_config_builder.py
+@@ -1,4 +1,5 @@
+ # -*- coding: utf-8 -*-
++import re
+ 
+ from gitlint.tests.base import BaseTestCase
+ 
+@@ -87,7 +88,8 @@ class LintConfigBuilderTests(BaseTestCase):
+ 
+         # bad config file load
+         foo_path = self.get_sample_path(u"föo")
+-        with self.assertRaisesRegex(LintConfigError, u"Invalid file path: {0}".format(foo_path)):
++        expected_error_msg = u"Invalid file path: {0}".format(re.escape(foo_path))
++        with self.assertRaisesRegex(LintConfigError, expected_error_msg):
+             config_builder.set_from_config_file(foo_path)
+ 
+         # error during file parsing
+diff --git a/gitlint/tests/test_options.py b/gitlint/tests/test_options.py
+index 346bb0a..cc86a54 100644
+--- a/gitlint/tests/test_options.py
++++ b/gitlint/tests/test_options.py
+@@ -1,5 +1,6 @@
+ # -*- coding: utf-8 -*-
+ import os
++import re
+ 
+ from gitlint.tests.base import BaseTestCase
+ 
+@@ -139,7 +140,8 @@ class RuleOptionTests(BaseTestCase):
+ 
+         # set to a file, should raise exception since option.type = dir
+         sample_path = self.get_sample_path("commit_message/sample1")
+-        expected = u"Option test-directory must be an existing directory \(current value: '{0}'\)".format(sample_path)
++        expected = u"Option test-directory must be an existing directory \(current value: '{0}'\)".format(
++            re.escape(sample_path))
+         with self.assertRaisesRegex(RuleOptionError, expected):
+             option.set(sample_path)
+ 
+@@ -148,7 +150,7 @@ class RuleOptionTests(BaseTestCase):
+         option.set(sample_path)
+         self.assertEqual(option.value, sample_path)
+         expected = u"Option test-directory must be an existing file \(current value: '{0}'\)".format(
+-            self.get_sample_path())
++            re.escape(self.get_sample_path()))
+         with self.assertRaisesRegex(RuleOptionError, expected):
+             option.set(self.get_sample_path())
+ 
+-- 
+2.11.0
+
