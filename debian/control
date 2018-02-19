@@ -20,7 +20,8 @@ Package: gitlint
 Architecture: all
 Depends: git,
          ${misc:Depends},
-         ${python3:Depends}
+         ${python3:Depends},
+         python3-sh
 Description: Git commit message linter written in Python
  Git commit message linter written in Python, checks your
  commit messages for style.
